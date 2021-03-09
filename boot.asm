@@ -4,8 +4,6 @@
 ; a 16-bit processor.  So our initial boot loader code is 16-bit code that will 
 ; eventually switch the processor into 32-bit mode.
 
-; ctyme.com/intr/int.htm
-
 BITS 16
 
 ; Tell the assembler that we will be loaded at 7C00 (That's where the BIOS loads boot loader code).
@@ -14,7 +12,7 @@ start:
 	jmp 	Real_Mode_Start				; Jump past our sub-routines
 
 
-%include "io.asm"
+%include "console.asm"
 
 ;	Start of the actual boot loader code
 Real_Mode_Start:
@@ -29,7 +27,7 @@ Real_Mode_Start:
 	mov 	[boot_device], dl			; Sets boot_device to what the BIOS provides
 
 	mov 	si, boot_message			; Display our greeting
-	call 	Console_WriteLine
+	call 	Console_Write_16
 
 	; Now we need to read the next part of the boot process into memory
 
@@ -49,11 +47,11 @@ Real_Mode_Start:
 
 Read_Failed:
 	mov 	si, read_failed_msg
-	call	Console_WriteLine
+	call	Console_Write_16
 
 Quit:
 	mov		si, cannot_continue_msg
-	call	Console_WriteLine
+	call	Console_Write_16
 
 	hlt									; Halt the processor
 

@@ -4,18 +4,16 @@
 ; a 16-bit processor.  So our initial boot loader code is 16-bit code that will 
 ; eventually switch the processor into 32-bit mode.
 
-; ctyme.com/intr/int.htm
-
 BITS 16
 
 ; Tell the assembler that we will be loaded at 9000h (That's where stage 1 jumps to to begin stage 2).
 ORG 9000h
 
 start:
-    jmp     Stage2                      ; Startup
+    jmp     Stage2
 
-%include "io.asm"
-%include "video.asm"
+%include "console.asm"
+%include "graphics.asm"
 
 Stage2:
 
@@ -24,21 +22,24 @@ Stage2:
     mov     al, 13h
     int     10h
 
-    ; Rendering
+; Here be Rendering Procedure
+    ; Clear the back buffer (to a set colour)
     mov     ax, 0
-    call    Clear_Color
+    call    Clear_Buffer_To_Colour
 
+    ; Draw Things
     mov     ax, 15
-    call    Demo_Lines
+    call    Draw_Lines_Demo
  
-    ; Blit back buffer on front buffer
-    call    Present
+    ; Copy the back buffer to the front buffer
+    call    Buffer_Swap
 
+    ; Infinite Loop
 endloop:
     jmp     endloop
 
+; Current frame we're writing to
+Back_Buffer: equ 1000h
+
 ; Pad out the boot loader stage 2 so that it will be exactly 7 sectors
             times 512 * 7 - ($ - $$) db 0
-
-; Segment that will be used for the back buffer
-Back_Buff_Segment: equ 1000h
