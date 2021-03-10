@@ -7,14 +7,10 @@ Clear_Buffer_To_Colour:
     push    es
     push    cx
     push    di
-
     push    ax
-
     mov     ax, Back_Buffer
-    mov     es, ax
-    
+    mov     es, ax    
     pop     ax
-
     xor     di, di
     mov     cx, 320 * 200 / 2
     rep     stosw
@@ -140,11 +136,6 @@ Draw_Line_loop:
 
     imul    bx, dx, 320
     add     bx, cx
-    
-    ; Clamping values so that x coords greater than the horizontal are added to the next y coord.
-    mov     ax, 320 * 200
-    cmp     bx, ax
-    cmova   bx, ax
     mov     ax, [bp + 4]
     mov     byte[ds:bx], al ; Plot the point
 
@@ -158,7 +149,7 @@ Draw_Line_loop:
     and     ah, al
     sahf
     pop     ax
-    jnz     Draw_Line_Continued
+    jnz     Draw_Line_Conditions
     add     sp, 6 ; Clear the local vars
 
     pop     si
@@ -170,8 +161,7 @@ Draw_Line_loop:
     pop     bp
     ret     10
 
-Draw_Line_Continued:
-    xor     ax, ax
+Draw_Line_Conditions:
 
     ; e2 := 2 * err
     mov     bx, [bp - 18]
