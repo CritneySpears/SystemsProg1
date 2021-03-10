@@ -22,7 +22,6 @@ Clear_Buffer_To_Colour:
     pop     di
     pop     cx
     pop     es
-
     ret
 
 ; 10 calls to the line drawing function
@@ -104,7 +103,6 @@ Draw_Line:
     push    dx
     push    ds
     push    si
-
     sub     sp, 6
 
     mov     bx, Back_Buffer
@@ -135,40 +133,33 @@ Draw_Line:
     ; err := dx - dy
     mov     [bp - 18], si
     sub     [bp - 18], di
-
     mov     cx, [bp + 6]
     mov     dx, [bp + 8]
 
 Draw_Line_loop:
-    ; Retrieve offset from X and Y (Y * 320) + X
+
     imul    bx, dx, 320
     add     bx, cx
     
-    ; Clamp values between 0 and video block size.
-    ; This will allow X values greater than the
-    ; screen width to appear to overflow back to
-    ; the other side of the screen, since video
-    ; memory is a contiguous block.
+    ; Clamping values so that x coords greater than the horizontal are added to the next y coord.
     mov     ax, 320 * 200
     cmp     bx, ax
-    cmova   bx, ax                  ; "above" is an unsigned condition, -1 compared to 64000
-    mov     ax, [bp + 4]            ; still results "above" since -1 is really FFFF.
-    
-    mov     byte[ds:bx], al         ; Plot point
+    cmova   bx, ax
+    mov     ax, [bp + 4]
+    mov     byte[ds:bx], al ; Plot the point
 
-    ; if x0 = x1 and y0 = y1 break
+    ; if x0 = x1 and y0 = y1 then break
     push    ax
-    cmp     cx, [bp + 10]           ; Compare X0 with X1
+    cmp     cx, [bp + 10]
     lahf
-    mov     al, ah                  ; Store flags result in al
-    cmp     dx, [bp + 12]           ; Compare Y0 with Y1
-    lahf                            ; Store flags result in ah
-    and     ah, al                  ; AND ah and al (if ZF was 0 in either it will now be 0)
-    sahf                            ; Store flags back
+    mov     al, ah
+    cmp     dx, [bp + 12]
+    lahf
+    and     ah, al
+    sahf
     pop     ax
-    jnz     Draw_Line_Continued          ; If the ZF not set it means we can continue
-    
-    add     sp, 6                   ; Clear local variables
+    jnz     Draw_Line_Continued
+    add     sp, 6 ; Clear the local vars
 
     pop     si
     pop     ds
@@ -176,9 +167,7 @@ Draw_Line_loop:
     pop     cx
     pop     bx
     pop     ax
-
     pop     bp
-
     ret     10
 
 Draw_Line_Continued:
@@ -186,12 +175,11 @@ Draw_Line_Continued:
 
     ; e2 := 2 * err
     mov     bx, [bp - 18]
-    shl     bx, 1                   ; Here we multiply err by 2
+    shl     bx, 1
 
-    ; if e2 > -dy then
+    ; if e2 > -dy
     ;   err := err - dy
     ;   x0 := x0 + sx
-    ; end
     neg     di
     cmp     bx, di
     cmovg   ax, di
@@ -202,10 +190,9 @@ Draw_Line_Continued:
     neg     di
     add     cx, ax
 
-    ; if e2 < dx then
+    ; if e2 < dx
     ;   err := err + dx
     ;   y0 := y0 + sy
-    ; end
     cmp     bx, si
     mov     ax, 0
     cmovl   ax, si
@@ -214,5 +201,4 @@ Draw_Line_Continued:
     cmp     bx, si
     cmovl   ax, [bp - 16]
     add     dx, ax
-
     jmp     Draw_Line_loop

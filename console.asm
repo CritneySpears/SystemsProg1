@@ -14,3 +14,22 @@ Console_Write_16_Repeat:
 
 Console_Write_16_Done:
     ret
+
+; Output Carriage-Return/Line-Feed (CRLF) sequence to screen using BIOS
+
+Console_Write_CRLF:
+	mov 	ah, 0Eh						; Output CR
+    mov 	al, 0Dh
+    int 	10h
+    mov 	al, 0Ah						; Output LF
+    int 	10h
+    ret
+
+; Write string to the console using BIOS followed by CRLF
+; 
+; Input: SI points to a null-terminated string
+
+Console_WriteLine_16:
+	call 	Console_Write_16
+	call 	Console_Write_CRLF
+	ret

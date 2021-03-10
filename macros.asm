@@ -11,7 +11,7 @@
 %macro abs 2
     mov     %2, %1          ; Save value
     neg     %1              ; Negate
-    cmovl   %1, %2          ; If SF isset, original was positive; move back
+    cmovl   %1, %2          ; If originally +ve; move back
 %endmacro
 
 ; Draws a line from two points
